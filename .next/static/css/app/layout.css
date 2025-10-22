@@ -1336,6 +1336,9 @@ video {
 .font-semibold {
   font-weight: 600;
 }
+.uppercase {
+  text-transform: uppercase;
+}
 .capitalize {
   text-transform: capitalize;
 }
@@ -1344,6 +1347,9 @@ video {
 }
 .tracking-tight {
   letter-spacing: -0.025em;
+}
+.tracking-wider {
+  letter-spacing: 0.05em;
 }
 .text-blue-600 {
   --tw-text-opacity: 1;
