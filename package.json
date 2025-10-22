@@ -1,7 +1,7 @@
 {
-  "name": "ff-dashboard",
+  "name": "ff-hms-6900",
   "version": "1.0.0",
-  "description": "Furfield Central Dashboard - Main hub for all Furfield microservices",
+  "description": "Furfield Home Management System - User portal for accessing subscribed modules",
   "private": true,
   "scripts": {
     "dev": "next dev -p 6900",
