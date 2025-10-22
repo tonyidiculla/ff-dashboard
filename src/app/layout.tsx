@@ -3,6 +3,8 @@ import './globals.css'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { ReactQueryProvider } from '@/providers/ReactQueryProvider'
+import { AuthProvider } from '@/context/AuthContext'
+import { hmsNavigation } from '@/config/navigation'
 
 export const metadata: Metadata = {
   title: 'FURFIELD HMS - Hospital Management System & Module Hub',
@@ -17,17 +19,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="text-foreground bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
-        <ReactQueryProvider>
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <div className="flex-1 flex flex-col relative">
+        <AuthProvider>
+          <ReactQueryProvider>
+            <div className="flex flex-col min-h-screen">
+              {/* Full-width Header */}
               <Header />
-              <main className="flex-1 p-6 overflow-auto relative">
-                {children}
-              </main>
+              
+              {/* Sidebar and Content below Header */}
+              <div className="flex flex-1">
+                <Sidebar navigation={hmsNavigation} />
+                <main className="flex-1 p-6 overflow-auto relative flex flex-col">
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
-        </ReactQueryProvider>
+          </ReactQueryProvider>
+        </AuthProvider>
       </body>
     </html>
   )

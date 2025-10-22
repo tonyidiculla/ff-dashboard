@@ -1,0 +1,105 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]:
+            - img "Furfield Logo" [ref=e8]
+            - generic [ref=e9]:
+              - heading "FURFIELD" [level=1] [ref=e10]
+              - paragraph [ref=e11]: Veterinary Management System
+          - generic [ref=e12]:
+            - searchbox "Search" [ref=e13]
+            - img [ref=e14]
+        - generic [ref=e16]:
+          - button "View notifications" [ref=e17]:
+            - img [ref=e18]
+          - generic [ref=e21]:
+            - generic [ref=e22]:
+              - paragraph [ref=e23]: Tony Idiculla
+              - paragraph [ref=e24]: Platform Administrator
+            - generic [ref=e25]: T
+            - button "Sign Out" [ref=e26]
+    - generic [ref=e27]:
+      - complementary [ref=e28]:
+        - navigation [ref=e29]:
+          - link "Dashboard" [ref=e31] [cursor=pointer]:
+            - /url: /
+            - img [ref=e32]
+            - text: Dashboard
+          - generic [ref=e34]:
+            - generic [ref=e35]:
+              - link "Outpatient" [ref=e36] [cursor=pointer]:
+                - /url: /outpatient/appointments
+                - img [ref=e37]
+                - text: Outpatient
+              - button [ref=e39]:
+                - img [ref=e40]
+            - generic [ref=e42]:
+              - link "Appointments" [ref=e43] [cursor=pointer]:
+                - /url: /outpatient/appointments
+              - link "Consultations" [ref=e44] [cursor=pointer]:
+                - /url: /outpatient/consultations
+              - link "Billing" [ref=e45] [cursor=pointer]:
+                - /url: /outpatient/billing
+          - generic [ref=e47]:
+            - link "Inpatient" [ref=e48] [cursor=pointer]:
+              - /url: /inpatient/admissions
+              - img [ref=e49]
+              - text: Inpatient
+            - button [ref=e51]:
+              - img [ref=e52]
+          - generic [ref=e55]:
+            - link "Operation Theater" [ref=e56] [cursor=pointer]:
+              - /url: /operation-theater/schedule
+              - img [ref=e57]
+              - text: Operation Theater
+            - button [ref=e59]:
+              - img [ref=e60]
+          - generic [ref=e63]:
+            - link "Pharmacy" [ref=e64] [cursor=pointer]:
+              - /url: /pharmacy/inventory
+              - img [ref=e65]
+              - text: Pharmacy
+            - button [ref=e67]:
+              - img [ref=e68]
+          - generic [ref=e71]:
+            - link "Diagnostics" [ref=e72] [cursor=pointer]:
+              - /url: /diagnostics/lab
+              - img [ref=e73]
+              - text: Diagnostics
+            - button [ref=e75]:
+              - img [ref=e76]
+          - link "HR" [ref=e79] [cursor=pointer]:
+            - /url: /hr
+            - img [ref=e80]
+            - text: HR
+          - link "Rostering" [ref=e83] [cursor=pointer]:
+            - /url: /rostering
+            - img [ref=e84]
+            - text: Rostering
+          - link "Purchasing" [ref=e87] [cursor=pointer]:
+            - /url: /purchasing
+            - img [ref=e88]
+            - text: Purchasing
+          - link "Finance" [active] [ref=e91] [cursor=pointer]:
+            - /url: /finance
+            - img [ref=e92]
+            - text: Finance
+      - main [ref=e94]:
+        - generic [ref=e96]:
+          - img [ref=e98]
+          - heading "Oops! Service Down" [level=2] [ref=e100]
+          - paragraph [ref=e101]: Will be back online soon
+          - button "Retry" [ref=e102]
+  - generic [ref=e103]:
+    - img [ref=e105]
+    - button "Open Tanstack query devtools" [ref=e153] [cursor=pointer]:
+      - img [ref=e154]
+  - button "Open Next.js Dev Tools" [ref=e207] [cursor=pointer]:
+    - img [ref=e208]
+  - alert [ref=e211]: FURFIELD
+```

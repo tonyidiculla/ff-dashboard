@@ -1,12 +1,37 @@
 'use client';
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
-const navigation = [
+// Type definitions
+interface NavigationChild {
+  name: string;
+  href: string;
+}
+
+interface NavigationItem {
+  name: string;
+  href?: string;
+  icon: React.ReactNode;
+  children?: NavigationChild[];
+  isSeparator?: boolean;
+}
+
+interface FurfieldSidebarProps {
+  currentModule?: string; // e.g., 'HMS', 'Finance', 'Clinic'
+  currentPath?: string;
+  appName?: string; // e.g., 'HMS', 'FINM', 'CLIN'
+  navigation?: NavigationItem[]; // Custom navigation items (optional)
+  Link?: React.ComponentType<any>; // Next.js Link component or regular <a>
+  Image?: React.ComponentType<any>; // Next.js Image component or regular <img>
+  usePathname?: () => string; // Next.js usePathname hook
+  cn?: (...classes: any[]) => string; // Tailwind merge utility
+}
+
+const defaultNavigation: NavigationItem[] = [
   {
     name: 'Dashboard',
     href: '/',
@@ -24,9 +49,9 @@ const navigation = [
       </svg>
     ),
     children: [
-      { name: 'Appointments', href: '/core/appointments' },
-      { name: 'Consultations', href: '/core/consultations' },
-      { name: 'Billing', href: '/core/billing' },
+      { name: 'Appointments', href: '/outpatient/appointments' },
+      { name: 'Consultations', href: '/outpatient/consultations' },
+      { name: 'Billing', href: '/outpatient/billing' },
     ],
   },
   {
@@ -83,7 +108,7 @@ const navigation = [
   // Other Application Modules
   {
     name: 'Finance',
-    href: 'http://localhost:6850',
+    href: '/finance',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -91,17 +116,8 @@ const navigation = [
     ),
   },
   {
-    name: 'Clinic',
-    href: 'http://localhost:6830',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-      </svg>
-    ),
-  },
-  {
     name: 'HRMS',
-    href: 'http://localhost:6860',
+    href: '/hr',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -110,7 +126,7 @@ const navigation = [
   },
   {
     name: 'Purchasing',
-    href: 'http://localhost:6870',
+    href: '/purchasing',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -119,7 +135,7 @@ const navigation = [
   },
   {
     name: 'Rostering',
-    href: 'http://localhost:6840',
+    href: '/rostering',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -128,9 +144,37 @@ const navigation = [
   },
 ];
 
-export const Sidebar: React.FC = () => {
+export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
   const pathname = usePathname();
-  const [expandedItems, setExpandedItems] = React.useState<string[]>(['Outpatient']);
+  
+  // Helper function to append auth token to cross-origin URLs
+  const appendAuthToken = (href: string): string => {
+    // Only append token to external URLs (different origins)
+    if (href.startsWith('http://localhost:') && !href.includes(window.location.port)) {
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('furfield_token='))
+        ?.split('=')[1];
+      
+      if (token) {
+        const url = new URL(href);
+        url.searchParams.set('auth_token', token);
+        return url.toString();
+      }
+    }
+    return href;
+  };
+  
+  // Auto-expand Finance if on a finance page
+  const initialExpanded = ['Outpatient'];
+  if (pathname.startsWith('/books') || pathname.startsWith('/accounts') || 
+      pathname.startsWith('/transactions') || pathname.startsWith('/reports')) {
+    initialExpanded.push('Finance');
+  }
+  const [expandedItems, setExpandedItems] = React.useState<string[]>(initialExpanded);
+
+  // Use provided navigation or fall back to default
+  const navItems = navigation || defaultNavigation;
 
   const toggleExpanded = (name: string) => {
     setExpandedItems(prev =>
@@ -139,25 +183,9 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-64 bg-white shadow-2xl border-r border-gray-200 min-h-screen">
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <Image 
-            src="/Furfield-icon.png" 
-            alt="Furfield Logo" 
-            width={48} 
-            height={48}
-            className="rounded-lg"
-          />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900">FURFIELD</h1>
-            <p className="text-xs text-gray-600 mt-0.5">HMS</p>
-          </div>
-        </div>
-      </div>
-      
+    <aside className="w-64 bg-white shadow-lg border-r border-gray-200">
       <nav className="p-4 space-y-1">
-        {navigation.map((item, index) => {
+        {navItems.map((item, index) => {
           // Handle separator
           if (item.isSeparator) {
             return (
@@ -177,29 +205,37 @@ export const Sidebar: React.FC = () => {
           return (
             <div key={item.name}>
               {hasChildren ? (
-                <button
-                  onClick={() => toggleExpanded(item.name)}
-                  className={cn(
-                    'flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all',
-                    'hover:bg-blue-50 hover:text-blue-700'
-                  )}
-                >
-                  <span className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <Link
+                    href={appendAuthToken(item.children![0].href)}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all flex-1',
+                      'hover:bg-blue-50 hover:text-blue-700 text-gray-700'
+                    )}
+                  >
                     {item.icon}
                     {item.name}
-                  </span>
-                  <svg
-                    className={cn('w-4 h-4 transition-transform', isExpanded && 'rotate-90')}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                  </Link>
+                  <button
+                    onClick={() => toggleExpanded(item.name)}
+                    className={cn(
+                      'p-3 rounded-xl text-sm font-medium transition-all',
+                      'hover:bg-blue-50 hover:text-blue-700'
+                    )}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                    <svg
+                      className={cn('w-4 h-4 transition-transform', isExpanded && 'rotate-90')}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
               ) : (
                 <Link
-                  href={item.href!}
+                  href={appendAuthToken(item.href!)}
                   className={cn(
                     'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
                     isActive
@@ -219,7 +255,7 @@ export const Sidebar: React.FC = () => {
                     return (
                       <Link
                         key={child.href}
-                        href={child.href}
+                        href={appendAuthToken(child.href)}
                         className={cn(
                           'block px-4 py-2.5 rounded-lg text-sm transition-all',
                           isChildActive
