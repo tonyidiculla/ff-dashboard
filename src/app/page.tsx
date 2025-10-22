@@ -1,171 +1,170 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { FURFIELD_SERVICES } from '@/lib/services';
-import { Service, ServiceStatus, ServiceCategory, DashboardStats } from '@/types';
-import ServiceCard from '@/components/ServiceCard';
-import ServiceHealth from '@/components/ServiceHealth';
-import QuickActions from '@/components/QuickActions';
-import DashboardHeader from '@/components/DashboardHeader';
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { PageWrapper } from '@/components/layout/PageWrapper';
 
-export default function DashboardPage() {
-  const [services, setServices] = useState<Service[]>(FURFIELD_SERVICES);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalServices: 0,
-    onlineServices: 0,
-    offlineServices: 0,
-    errorServices: 0,
-    avgResponseTime: 0,
-  });
-  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | 'all'>('all');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+export default function HomePage() {
+  const stats = [
+    { label: 'Total Appointments', value: '24', change: '+12%', trend: 'up' },
+    { label: 'Active Pets', value: '156', change: '+8%', trend: 'up' },
+    { label: 'Pending Bills', value: '8', change: '-3%', trend: 'down' },
+    { label: 'Available Beds', value: '12', change: '0%', trend: 'neutral' },
+  ];
 
-  // Check service health
-  const checkServiceHealth = async (service: Service): Promise<Service> => {
-    const startTime = Date.now();
-    try {
-      const response = await fetch(`${service.url}${service.healthEndpoint || '/api/health'}`, {
-        method: 'GET',
-        signal: AbortSignal.timeout(5000), // 5 second timeout
-      });
+  const recentActivities = [
+    { id: 1, type: 'Appointment', patient: 'Max (Dog)', time: '10 mins ago', status: 'completed' },
+    { id: 2, type: 'Admission', patient: 'Luna (Cat)', time: '25 mins ago', status: 'active' },
+    { id: 3, type: 'Surgery', patient: 'Charlie (Dog)', time: '1 hour ago', status: 'scheduled' },
+    { id: 4, type: 'Lab Test', patient: 'Bella (Cat)', time: '2 hours ago', status: 'pending' },
+  ];
 
-      const responseTime = Date.now() - startTime;
-      
-      if (response.ok) {
-        return {
-          ...service,
-          status: ServiceStatus.ONLINE,
-          responseTime,
-          lastChecked: new Date(),
-        };
-      } else {
-        return {
-          ...service,
-          status: ServiceStatus.ERROR,
-          responseTime,
-          lastChecked: new Date(),
-        };
-      }
-    } catch (error) {
-      const responseTime = Date.now() - startTime;
-      return {
-        ...service,
-        status: ServiceStatus.OFFLINE,
-        responseTime,
-        lastChecked: new Date(),
-      };
-    }
-  };
-
-  // Check all services health
-  const checkAllServicesHealth = async () => {
-    setIsRefreshing(true);
-    
-    const healthCheckPromises = services.map(service => checkServiceHealth(service));
-    const updatedServices = await Promise.all(healthCheckPromises);
-    
-    setServices(updatedServices);
-    
-    // Update stats
-    const newStats: DashboardStats = {
-      totalServices: updatedServices.length,
-      onlineServices: updatedServices.filter(s => s.status === ServiceStatus.ONLINE).length,
-      offlineServices: updatedServices.filter(s => s.status === ServiceStatus.OFFLINE).length,
-      errorServices: updatedServices.filter(s => s.status === ServiceStatus.ERROR).length,
-      avgResponseTime: updatedServices.reduce((sum, s) => sum + (s.responseTime || 0), 0) / updatedServices.length,
-    };
-    
-    setStats(newStats);
-    setIsRefreshing(false);
-  };
-
-  // Filter services by category
-  const filteredServices = selectedCategory === 'all' 
-    ? services 
-    : services.filter(service => service.category === selectedCategory);
-
-  // Initial health check
-  useEffect(() => {
-    checkAllServicesHealth();
-    
-    // Set up periodic health checks every 30 seconds
-    const interval = setInterval(checkAllServicesHealth, 30000);
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  const categories = Object.values(ServiceCategory);
+  const upcomingAppointments = [
+    { id: 1, patient: 'Rocky', species: 'Dog', time: '2:00 PM', doctor: 'Dr. Smith' },
+    { id: 2, patient: 'Whiskers', species: 'Cat', time: '2:30 PM', doctor: 'Dr. Johnson' },
+    { id: 3, patient: 'Buddy', species: 'Dog', time: '3:00 PM', doctor: 'Dr. Smith' },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardHeader 
-        stats={stats}
-        onRefresh={checkAllServicesHealth}
-        isRefreshing={isRefreshing}
-      />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Quick Actions */}
-        <QuickActions />
+    <PageWrapper color="blue">
+      <div className="space-y-6">
+        <div className="pl-6 pb-2">
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground mt-2">
+            Welcome back! Here's what's happening with your hospital today.
+          </p>
+        </div>
 
-        {/* Service Health Overview */}
-        <ServiceHealth stats={stats} />
-
-        {/* Category Filter */}
-        <div className="mb-8">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => setSelectedCategory('all')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  selectedCategory === 'all'
-                    ? 'border-furfield-500 text-furfield-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+      {/* Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat, index) => (
+          <Card key={index}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{stat.label}</CardTitle>
+              <svg
+                className={`h-4 w-4 ${
+                  stat.trend === 'up' ? 'text-green-600' : stat.trend === 'down' ? 'text-red-600' : 'text-gray-400'
                 }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                All Services ({services.length})
-              </button>
-              {categories.map((category) => {
-                const count = services.filter(s => s.category === category).length;
-                return (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                      selectedCategory === category
-                        ? 'border-furfield-500 text-furfield-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    {category.charAt(0).toUpperCase() + category.slice(1)} ({count})
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
+                {stat.trend === 'up' ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                ) : stat.trend === 'down' ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" />
+                )}
+              </svg>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className={stat.trend === 'up' ? 'text-green-600' : stat.trend === 'down' ? 'text-red-600' : ''}>
+                  {stat.change}
+                </span>{' '}
+                from last week
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-        {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredServices.map((service) => (
-            <ServiceCard 
-              key={service.id} 
-              service={service}
-              onRefresh={() => checkServiceHealth(service).then(updated => {
-                setServices(prev => prev.map(s => s.id === updated.id ? updated : s));
-              })}
-            />
-          ))}
-        </div>
-
-        {filteredServices.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-500 text-lg">
-              No services found in the {selectedCategory} category.
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        {/* Recent Activities */}
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Recent Activities</CardTitle>
+            <CardDescription>Latest updates from your hospital</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {recentActivities.map((activity) => (
+                <div key={activity.id} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    <div>
+                      <p className="text-sm font-medium">{activity.type}</p>
+                      <p className="text-xs text-muted-foreground">{activity.patient}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Badge
+                      variant={
+                        activity.status === 'completed'
+                          ? 'success'
+                          : activity.status === 'active'
+                          ? 'info'
+                          : activity.status === 'scheduled'
+                          ? 'warning'
+                          : 'default'
+                      }
+                    >
+                      {activity.status}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">{activity.time}</span>
+                  </div>
+                </div>
+              ))}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Upcoming Appointments */}
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Upcoming Appointments</CardTitle>
+            <CardDescription>Today's schedule</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {upcomingAppointments.map((appointment) => (
+                <div key={appointment.id} className="flex items-center space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                    {appointment.patient.substring(0, 2)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{appointment.patient}</p>
+                    <p className="text-xs text-muted-foreground">{appointment.species} • {appointment.doctor}</p>
+                  </div>
+                  <div className="text-sm font-medium text-primary">{appointment.time}</div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>Commonly used features for quick access</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-6">
+            {[
+              { label: 'New Appointment', icon: '📅', href: '/core/appointments' },
+              { label: 'New Pet', icon: '🐾', href: '/core/patients' },
+              { label: 'Admissions', icon: '🏥', href: '/inpatient/admissions' },
+              { label: 'Pharmacy', icon: '💊', href: '/pharmacy' },
+              { label: 'Lab Tests', icon: '🔬', href: '/diagnostics' },
+              { label: 'Billing', icon: '💰', href: '/core/billing' },
+            ].map((action, index) => (
+              <button
+                key={index}
+                className="flex flex-col items-center justify-center p-6 rounded-2xl bg-white/30 backdrop-blur-xl ring-1 ring-white/10 hover:bg-white/40 hover:ring-primary/30 hover:scale-105 transition-all duration-300 group"
+              >
+                <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">{action.icon}</span>
+                <span className="text-sm font-medium text-center">{action.label}</span>
+              </button>
+            ))}
           </div>
-        )}
-      </main>
+        </CardContent>
+      </Card>
     </div>
+    </PageWrapper>
   );
 }
